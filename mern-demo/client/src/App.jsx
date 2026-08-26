@@ -8,6 +8,7 @@ function App() {
     name: '',
     email: ''
   });
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     fetchStudents();
@@ -26,17 +27,53 @@ function App() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetch('/api/students', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setFormData({ studentId: '', name: '', email: '' });
-        fetchStudents();
+
+    if (editingId) {
+      // Cập nhật sinh viên
+      fetch(`/api/students/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       })
-      .catch((err) => console.error('Lỗi khi thêm sinh viên:', err));
+        .then((res) => res.json())
+        .then(() => {
+          setFormData({ studentId: '', name: '', email: '' });
+          setEditingId(null);
+          fetchStudents();
+        })
+        .catch((err) => console.error('Lỗi khi cập nhật sinh viên:', err));
+    } else {
+      // Thêm sinh viên mới
+      fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+        .then((res) => res.json())
+        .then(() => {
+          setFormData({ studentId: '', name: '', email: '' });
+          fetchStudents();
+        })
+        .catch((err) => console.error('Lỗi khi thêm sinh viên:', err));
+    }
+  };
+
+  const handleEdit = (sv) => {
+    setFormData({ studentId: sv.studentId, name: sv.name, email: sv.email });
+    setEditingId(sv._id);
+  };
+
+  const handleCancelEdit = () => {
+    setFormData({ studentId: '', name: '', email: '' });
+    setEditingId(null);
+  };
+
+  const handleDelete = (id) => {
+    if (!window.confirm('Bạn có chắc muốn xóa sinh viên này?')) return;
+    fetch(`/api/students/${id}`, { method: 'DELETE' })
+      .then((res) => res.json())
+      .then(() => fetchStudents())
+      .catch((err) => console.error('Lỗi khi xóa sinh viên:', err));
   };
 
   return (
@@ -68,7 +105,12 @@ function App() {
           onChange={handleChange}
           required
         />
-        <button type="submit">Thêm sinh viên</button>
+        <button type="submit">{editingId ? 'Cập nhật' : 'Thêm sinh viên'}</button>
+        {editingId && (
+          <button type="button" onClick={handleCancelEdit}>
+            Hủy
+          </button>
+        )}
       </form>
 
       <table border="1" cellPadding="8">
@@ -77,6 +119,7 @@ function App() {
             <th>MSSV</th>
             <th>Họ tên</th>
             <th>Email</th>
+            <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
@@ -85,6 +128,10 @@ function App() {
               <td>{sv.studentId}</td>
               <td>{sv.name}</td>
               <td>{sv.email}</td>
+              <td>
+                <button onClick={() => handleEdit(sv)}>Sửa</button>
+                <button onClick={() => handleDelete(sv._id)}>Xóa</button>
+              </td>
             </tr>
           ))}
         </tbody>
