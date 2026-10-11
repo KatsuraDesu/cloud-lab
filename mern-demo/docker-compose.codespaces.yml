@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: hoangphat111/mern-frontend:1.1
+    image: hoangphat111/mern-frontend:2.0
     container_name: mern-frontend
     network_mode: host
     environment:

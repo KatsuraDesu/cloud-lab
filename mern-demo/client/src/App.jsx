@@ -136,7 +136,7 @@ function App() {
           ))}
         </tbody>
       </table>
-      <p>Phiên bản 2.0 - Production Cloud PaaS (Auto-Deployed)</p>
+      <p>Phiên bản 2.0 - Docker Compose Multi-Container</p>
     </div>
   );
 }
